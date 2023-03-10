@@ -17,7 +17,8 @@ from typing import List
 
 app = FastAPI()
 origins = [
-    "http://localhost:4200",
+    "http://localhost:8080",
+    "https://mybright.herokuapp.com",
 ]
 
 app.add_middleware(

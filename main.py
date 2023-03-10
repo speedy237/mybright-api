@@ -17,7 +17,7 @@ from typing import List
 
 app = FastAPI()
 origins = [
-    "http://localhost:8080",
+    "http://localhost:4200",
     "https://mybright.herokuapp.com",
 ]
 

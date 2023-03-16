@@ -5,4 +5,7 @@ python-multipart==0.0.5
 SQLAlchemy==1.4.46
 starlette==0.22.0
 uvicorn==0.20.0
+urllib3==1.25.11
+userpath==1.8.0
+paramiko
 

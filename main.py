@@ -12,6 +12,13 @@ import os
 from pathlib import Path
 import tempfile
 from typing import List
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email.mime.text import MIMEText
+from email import encoders
+import smtplib
+import urllib.parse
+
 
 
 
@@ -169,3 +176,55 @@ async def login(credentials: Credentials):
         return user
     finally:
         session.close()
+
+@app.post("/report")
+async def send_report(adr:str,attachment: UploadFile = File(None)):
+    # Créer un message MIME
+    msg = MIMEMultipart()
+    msg['From'] = 'no-reply@bright-medicals.com'
+    msg['To'] = adr
+    msg['Subject'] = 'Result Analysies'
+
+    # Ajouter le contenu du message
+    body = 'Thank you for trusting mybright for your medical imaging diagnostics.\n Attached is the diagnostic result.\n Bright-Medicals, the future of diagnostic imaging in africa \n\n Bright-Medicals team\n info@bright-medicals.com \n +237695731410 \n +237691874358'
+    msg.attach(MIMEText(body, 'plain'))
+
+    # Ajouter le document attaché
+    if attachment is not None:
+        filename_header = 'filename="{}"; filename*=utf-8\'\'{}'.format(attachment.filename, urllib.parse.quote(attachment.filename))
+        part = MIMEBase('application', 'octet-stream')
+        part.set_payload(attachment.file.read())
+        encoders.encode_base64(part)
+        part.add_header('Content-Disposition', 'attachment', filename=filename_header)
+        msg.attach(part)
+
+    # Envoyer l'e-mail
+    server = smtplib.SMTP('mail47.lwspanel.com', 587)
+    server.starttls()
+    server.login('no-reply@bright-medicals.com', 'sU5!tVnzqGmh5Nn')
+    server.sendmail('no-reply@bright-medicals.com',adr, msg.as_string())
+    server.quit()
+
+    return {"message": "L'e-mail a été envoyé avec succès"}
+
+
+@app.post("/mail")
+async def send_acount(user: UserCreate):
+    # Créer un message MIME
+    msg = MIMEMultipart()
+    msg['From'] = 'no-reply@bright-medicals.com'
+    msg['To'] = user.login
+    msg['Subject'] = 'Votre compte mybright'
+
+    # Ajouter le contenu du message
+    body = 'Welcome to MyBright '+user.grade+' '+user.nom+' '+user.prenom+',\n Your credential are  \n'+'email: '+user.login+'\n password:'+user.password+'\n Please do not reply to this email \n Cordially \n\n Bright-Medicals team\n info@bright-medicals.com \n +237695731410 \n +237691874358'
+    msg.attach(MIMEText(body, 'plain'))
+
+    # Envoyer l'e-mail
+    server = smtplib.SMTP('mail47.lwspanel.com', 587)
+    server.starttls()
+    server.login('no-reply@bright-medicals.com', 'sU5!tVnzqGmh5Nn')
+    server.sendmail('no-reply@bright-medicals.com', user.login, msg.as_string())
+    server.quit()
+
+    return {"message": "L'e-mail a été envoyé avec succès"}

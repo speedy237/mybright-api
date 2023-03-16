@@ -18,9 +18,8 @@ from email.mime.text import MIMEText
 from email import encoders
 import smtplib
 import urllib.parse
-
-
-
+from azure.identity import ClientSecretCredential
+from azure.mgmt.compute import ComputeManagementClient
 
 app = FastAPI()
 origins = [
@@ -228,3 +227,25 @@ async def send_acount(user: UserCreate):
     server.quit()
 
     return {"message": "L'e-mail a été envoyé avec succès"}
+@app.post("/start")
+async def startVM(vm_name:str,resource_group_name:str):
+    tenant_id = '1f732147-329c-4c90-abe9-768f5f6fdf49'
+    client_id = '1e2b20b2-f184-4c7b-9f3a-9023e182e64e'
+    client_secret = '95S8Q~msUJcMOpxA5Tsdflv_mEDoI0rNXT04Ea4z'
+    subscription_id = 'bfe170f0-6d0e-41f3-afb5-d9a9aea9a7d5'
+    credentials = ClientSecretCredential(tenant_id=tenant_id,client_id=client_id,client_secret=client_secret)
+    compute_client = ComputeManagementClient(credential=credentials,subscription_id=subscription_id)
+    async_vm_start = compute_client.virtual_machines.begin_start(resource_group_name=resource_group_name,vm_name=vm_name)
+    async_vm_start.wait()
+    return {"message": "VM start successfully"} 
+@app.post("/stop")
+async def stopVM(vm_name:str,resource_group_name:str):
+    tenant_id = '1f732147-329c-4c90-abe9-768f5f6fdf49'
+    client_id = '1e2b20b2-f184-4c7b-9f3a-9023e182e64e'
+    client_secret = '95S8Q~msUJcMOpxA5Tsdflv_mEDoI0rNXT04Ea4z'
+    subscription_id = 'bfe170f0-6d0e-41f3-afb5-d9a9aea9a7d5'
+    credentials = ClientSecretCredential(tenant_id=tenant_id,client_id=client_id,client_secret=client_secret)
+    compute_client = ComputeManagementClient(credential=credentials,subscription_id=subscription_id)
+    compute_client.virtual_machines.begin_power_off(resource_group_name, vm_name)
+    return {"message": "VM Stop successfully"}   
+                 
